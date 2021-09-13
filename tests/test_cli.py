@@ -111,6 +111,30 @@ SELECT 'abc'
                 main(['--preserve-comments'])
             assert output.getvalue() == "SELECT /* one */ 1\n"
 
+    with StringIO("""\
+select substring('abcd' from 1 for 2),
+       substring('abcd' from 2),
+       position('bc' in 'abcd'),
+       trim(both '  abc  '),
+       trim(both '*' from '***abc***'),
+       trim(leading '*' from '***abc***'),
+       trim(trailing '*' from '***abc***'),
+       overlay('Txxxxas' placing 'hom' FROM 2 for 4)
+""") as input:
+        with UnclosableStream() as output:
+            with redirect_stdin(input), redirect_stdout(output):
+                main(['--special-functions', '--compact-lists-margin', '100'])
+            assert output.getvalue() == """\
+SELECT substring('abcd' FROM 1 FOR 2)
+     , substring('abcd' FROM 2)
+     , position('bc' IN 'abcd')
+     , trim(BOTH FROM '  abc  ')
+     , trim(BOTH '*' FROM '***abc***')
+     , trim(LEADING '*' FROM '***abc***')
+     , trim(TRAILING '*' FROM '***abc***')
+     , overlay('Txxxxas' PLACING 'hom' FROM 2 FOR 4)
+"""
+
     with StringIO("select extract(hour from t1.modtime), count(*) from t1") as input:
         with UnclosableStream() as output:
             with redirect_stdin(input), redirect_stdout(output):
