@@ -90,7 +90,7 @@ def position(node, output):
 @special_function('pg_catalog.rtrim')
 def rtrim(node, output):
     """
-    Emit function ``pg_catalog.rtrim('  abc  ')`` as ``trim(TAILING FROM '  abc  ')``
+    Emit function ``pg_catalog.rtrim('  abc  ')`` as ``trim(TRAILING FROM '  abc  ')``
     and ``pg_catalog.rtrim('xxabcxx', 'x')`` as ``trim(TRAILING 'x' FROM 'xxabcxx')``
     """
     _print_trim('TRAILING', node, output)
