@@ -98,15 +98,19 @@ class AExprKindPrinter(IntEnumPrinter):
         output.write(')')
 
     def AEXPR_OP(self, node, output):
-        with output.expression():
+        outer_brackets = node.parent_node.node_tag == 'A_Expr'
+        if outer_brackets:
+            output.write('(')
+        #with output.expression():
+        if 1:
             # lexpr is optional because these are valid: -(1+1), +(1+1), ~(1+1)
             if node.lexpr is not Missing:
                 if node.lexpr.node_tag == 'A_Expr':
                     if node.lexpr.kind == node.kind and node.lexpr.name == node.name:
                         output.print_node(node.lexpr)
                     else:
-                        with output.expression():
-                            output.print_node(node.lexpr)
+                        #with output.expression():
+                        output.print_node(node.lexpr)
                 else:
                     output.print_node(node.lexpr)
                 output.write(' ')
@@ -122,10 +126,12 @@ class AExprKindPrinter(IntEnumPrinter):
                     if node.rexpr.kind == node.kind and node.rexpr.name == node.name:
                         output.print_node(node.rexpr)
                     else:
-                        with output.expression():
-                            output.print_node(node.rexpr)
+                        #with output.expression():
+                        output.print_node(node.rexpr)
                 else:
                     output.print_node(node.rexpr)
+        if outer_brackets:
+            output.write(')')
 
     def AEXPR_OP_ALL(self, node, output):
         output.print_node(node.lexpr)
@@ -210,16 +216,12 @@ def a_indirection_a_star(node, output):
 
 @node_printer('A_Indirection', 'ColumnRef')
 def a_indirection_column_ref(node, output):
-    output.write('(')
     column_ref(node, output)
-    output.write(')')
 
 
 @node_printer('A_Indirection', 'FuncCall')
 def a_indirection_func_call(node, output):
-    output.write('(')
     func_call(node, output)
-    output.write(')')
 
 
 @node_printer('A_Indirection', 'String')
