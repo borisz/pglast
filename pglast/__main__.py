@@ -41,7 +41,8 @@ def workhorse(args):
                 special_functions=args.special_functions,
                 comma_at_eoln=args.comma_at_eoln,
                 remove_pg_catalog_from_functions=args.remove_pg_catalog_from_functions,
-                semicolon_after_last_statement=args.semicolon_after_last_statement)
+                semicolon_after_last_statement=args.semicolon_after_last_statement,
+                reduce_parentheses=args.reduce_parentheses)
         except Error as e:
             print()
             raise SystemExit(e)
@@ -78,6 +79,8 @@ def main(options=None):
                         default=False,
                         help='omit explicit "pg_catalog" schema from function names,'
                         ' when possible')
+    parser.add_argument('-r', '--reduce-parentheses', action='store_true', default=False,
+                        help='Reduce parentheses.')
     parser.add_argument('-c', '--comma-at-eoln', action='store_true', default=False,
                         help='use alternative style to print lists, putting the comma right'
                         ' after each item')

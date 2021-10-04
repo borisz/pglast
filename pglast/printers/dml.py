@@ -98,21 +98,14 @@ class AExprKindPrinter(IntEnumPrinter):
         output.write(')')
 
     def AEXPR_OP(self, node, output):
-        outer_brackets = node.parent_node.node_tag == 'A_Expr'
-        if outer_brackets:
-            output.write('(')
-        #with output.expression():
-        if 1:
+
+        if output.reduce_parentheses:
+            outer_brackets = node.parent_node.node_tag == 'A_Expr'
+            if outer_brackets:
+                output.write('(')
             # lexpr is optional because these are valid: -(1+1), +(1+1), ~(1+1)
             if node.lexpr is not Missing:
-                if node.lexpr.node_tag == 'A_Expr':
-                    if node.lexpr.kind == node.kind and node.lexpr.name == node.name:
-                        output.print_node(node.lexpr)
-                    else:
-                        #with output.expression():
-                        output.print_node(node.lexpr)
-                else:
-                    output.print_node(node.lexpr)
+                output.print_node(node.lexpr)
                 output.write(' ')
             if isinstance(node.name, List) and len(node.name) > 1:
                 output.write('OPERATOR(')
@@ -122,16 +115,39 @@ class AExprKindPrinter(IntEnumPrinter):
                 output.print_symbol(node.name)
                 output.write(' ')
             if node.rexpr is not Missing:
-                if node.rexpr.node_tag == 'A_Expr':
-                    if node.rexpr.kind == node.kind and node.rexpr.name == node.name:
-                        output.print_node(node.rexpr)
+                output.print_node(node.rexpr)
+            if outer_brackets:
+                output.write(')')
+
+        else:
+            with output.expression():
+                # lexpr is optional because these are valid: -(1+1), +(1+1), ~(1+1)
+                if node.lexpr is not Missing:
+                    if node.lexpr.node_tag == 'A_Expr':
+                        if node.lexpr.kind == node.kind and node.lexpr.name == node.name:
+                            output.print_node(node.lexpr)
+                        else:
+                            with output.expression():
+                                output.print_node(node.lexpr)
                     else:
-                        #with output.expression():
-                        output.print_node(node.rexpr)
+                        output.print_node(node.lexpr)
+                    output.write(' ')
+                if isinstance(node.name, List) and len(node.name) > 1:
+                    output.write('OPERATOR(')
+                    output.print_symbol(node.name)
+                    output.write(') ')
                 else:
-                    output.print_node(node.rexpr)
-        if outer_brackets:
-            output.write(')')
+                    output.print_symbol(node.name)
+                    output.write(' ')
+                if node.rexpr is not Missing:
+                    if node.rexpr.node_tag == 'A_Expr':
+                        if node.rexpr.kind == node.kind and node.rexpr.name == node.name:
+                            output.print_node(node.rexpr)
+                        else:
+                            with output.expression():
+                                output.print_node(node.rexpr)
+                    else:
+                        output.print_node(node.rexpr)
 
     def AEXPR_OP_ALL(self, node, output):
         output.print_node(node.lexpr)
@@ -216,12 +232,22 @@ def a_indirection_a_star(node, output):
 
 @node_printer('A_Indirection', 'ColumnRef')
 def a_indirection_column_ref(node, output):
-    column_ref(node, output)
+    if output.reduce_parentheses:
+        column_ref(node, output)
+    else:
+        output.write('(')
+        column_ref(node, output)
+        output.write(')')
 
 
 @node_printer('A_Indirection', 'FuncCall')
 def a_indirection_func_call(node, output):
-    func_call(node, output)
+    if output.reduce_parentheses:
+        func_call(node, output)
+    else:
+        output.write('(')
+        func_call(node, output)
+        output.write(')')
 
 
 @node_printer('A_Indirection', 'String')

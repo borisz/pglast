@@ -121,6 +121,8 @@ class RawStream(OutputStream):
     :param comments: optional sequence of tuples with the comments extracted from the statement
     :param bool remove_pg_catalog_from_functions:
            ``False`` by default, when ``True`` remove the pg_catalog schema from functions
+    :param bool reduce_parentheses
+           ``False`` by default, when ``True`` reduce parentheses
 
     This augments :class:`OutputStream` and implements the basic machinery needed to serialize
     the *parse tree* produced by :func:`~.parser.parse_sql()` back to a textual representation,
@@ -129,7 +131,8 @@ class RawStream(OutputStream):
 
     def __init__(self, expression_level=0, separate_statements=1, special_functions=False,
                  comma_at_eoln=False, semicolon_after_last_statement=False,
-                 comments=None, remove_pg_catalog_from_functions=False):
+                 comments=None, remove_pg_catalog_from_functions=False,
+                 reduce_parentheses=False):
         super().__init__()
         self.current_column = 0
         self.expression_level = expression_level
@@ -139,6 +142,7 @@ class RawStream(OutputStream):
         self.semicolon_after_last_statement = semicolon_after_last_statement
         self.comments = comments
         self.remove_pg_catalog_from_functions = remove_pg_catalog_from_functions
+        self.reduce_parentheses = reduce_parentheses
 
     def show(self, where=stderr):  # pragma: no cover
         """Emit also current expression_level and a "pointer" showing current_column."""
@@ -260,7 +264,8 @@ class RawStream(OutputStream):
 
         rawstream = RawStream(expression_level=self.expression_level,
                               special_functions=self.special_functions,
-                              remove_pg_catalog_from_functions=self.remove_pg_catalog_from_functions)
+                              remove_pg_catalog_from_functions=self.remove_pg_catalog_from_functions,
+                              reduce_parentheses=self.reduce_parentheses)
         rawstream.print_list(nodes, sep, are_names=are_names, standalone_items=False)
         return rawstream.getvalue()
 
